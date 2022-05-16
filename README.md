@@ -3,9 +3,10 @@
 ## Usage
 
     - To run app:
-    """
+
+    ```
     python main.py
-    """
+    ```
 ### Upload Video
     - Go to 127.1.0.0:5000/upload
     - Upload videos
