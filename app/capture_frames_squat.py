@@ -26,15 +26,25 @@ class frameCaptureSquat():
 
     def run(self, video):
         # Setup mediapipe instance
+        FRAME_RATE = 5
+        FPS = 5
+        SHRINK_RATIO = 0.25
         mp_drawing = mp.solutions.drawing_utils
         mp_pose = mp.solutions.pose
         cap = cv2.VideoCapture(video)
+        cap.set(5,FPS)
+        cap.set(7,FRAME_RATE)
+
 
         with mp_pose.Pose(min_detection_confidence=0.1, min_tracking_confidence=0.1) as pose:
             frame_count = 0
             while cap.isOpened():
+                frame_count +=1
                 ret, frame = cap.read()
+                if frame_count % 10000 == 0:
+                    print(f'working at {frame_count} frames')
                 try:
+                    frame = cv2.resize(frame,None,fx=SHRINK_RATIO,fy=SHRINK_RATIO)
                     # Recolor image to RGB
                     image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     # print(image.shape)

@@ -9,6 +9,13 @@ from datetime import datetime
 from .capture_frames_run import frameCaptureRun
 from .capture_frames_squat import frameCaptureSquat
 import cv2
+import gspread
+
+# sa = gspread.service_account(filename="newagent-pss9-9047ed9cb1b8.json")
+# sh = sa.open_by_url('https://docs.google.com/spreadsheets/d/1YhmeuynXcs9Bo-Sl26HxsIkkrAbHdPMClxFh_nYVPvk')
+
+# squat_wks = sh.worksheet("squat")
+# running_wks = sh.worksheet("running")
 
 views = Blueprint('views',__name__)
 
@@ -28,7 +35,24 @@ def upload_vid():
             f.write(vid_bytes)
         capture.run('temp.mp4')
         os.remove('temp.mp4')
-        return request.form
+        message='Success!'
+        sa = gspread.service_account(filename="newagent-pss9-9047ed9cb1b8.json")
+        sh = sa.open_by_url('https://docs.google.com/spreadsheets/d/1YhmeuynXcs9Bo-Sl26HxsIkkrAbHdPMClxFh_nYVPvk')
+        df = pd.read_csv('metadata.csv')
+
+        dfr = df[df['video_type'] == 'running']
+        dfr = dfr.dropna(axis=1,how='all')
+        dfr = dfr.fillna('')
+        run_wks = sh.worksheet('running')
+        run_wks.update([dfr.columns.values.tolist()] + dfr.values.tolist())
+
+        dfs = df[df['video_type'] == 'squat']
+        dfs = dfs.dropna(axis=1,how='all')
+        dfs = dfs.fillna('')
+        squat_wks = sh.worksheet('squat')
+        squat_wks.update([dfs.columns.values.tolist()] + dfs.values.tolist())
+        
+        return message,request.form 
 
 
 
@@ -62,7 +86,6 @@ def save_img():
         metadata.dropna(inplace=True, axis=1)
         metadata = metadata.iloc[0]
         metadata = metadata.to_dict()
-        print(metadata)
         form = request.form
 
         ### Labels
@@ -109,7 +132,7 @@ def save_img():
         username = current_user.first_name
         
         metadata_csv = pd.read_csv('metadata.csv')
-        frame_angle = metadata_csv[metadata_csv['filename']==form['img_name']]['frame'].values[0]
+        frame_angle = metadata_csv[metadata_csv['filename']==form['img_name'].split('/')[1]]['frame'].values[0]
         
         df_logs.at[index,'index'] = index
         df_logs.at[index,'date'] = date
@@ -122,5 +145,16 @@ def save_img():
 
         df_logs.to_csv('label_log.csv',index=False)
 
+        ### put into googlesheets
+        sa = gspread.service_account(filename="newagent-pss9-9047ed9cb1b8.json")
+        sh = sa.open_by_url('https://docs.google.com/spreadsheets/d/1YhmeuynXcs9Bo-Sl26HxsIkkrAbHdPMClxFh_nYVPvk')
 
+        df_label = pd.read_csv('labels.csv')
+        labels_wks = sh.worksheet('labels')
+        labels_wks.update([df_label.columns.values.tolist()] + df_label.values.tolist())
+
+        df_log = pd.read_csv('label_log.csv')
+        logs_wks = sh.worksheet('labels_log')
+        logs_wks.update([df_log.columns.values.tolist()] + df_log.values.tolist())
+# worksheet.update([dataframe.columns.values.tolist()] + dataframe.values.tolist())
         return render_template('index.html', metadata = metadata, img_name=img, user=current_user)

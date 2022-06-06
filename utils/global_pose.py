@@ -41,9 +41,9 @@ class UtilsGen():
         y2 = b[0] * height
 
         dist = ((x1-x2)**2+(y1-y2)**2)**0.5
-        if debug:
-            cv2.line(img, (int(x1), int(y1)), (int(x2), int(y2)),
-                     (255, 255, 0), thickness=5)
+        # if debug:
+        #     cv2.line(img, (int(x1), int(y1)), (int(x2), int(y2)),
+        #              (255, 255, 0), thickness=5)
         return dist
 
     def showText(self, metric, point, image, text, debug):  # global utils
