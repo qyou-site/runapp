@@ -7,3 +7,6 @@ opencv-python
 pyyaml
 matplotlib
 mediapipe
+flask_sqlalchemy
+gspread
+protobuf==3.20
