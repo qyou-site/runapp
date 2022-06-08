@@ -13,7 +13,7 @@ RUN apt-get update -q \
 
 
 
-ENTRYPOINT ["python","main.py"]
+ENTRYPOINT ["python3","main.py"]
 # ENTRYPOINT ['/bin/bash','-l','-c']
 
 # CMD ['python', 'main.py']
