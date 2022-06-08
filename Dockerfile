@@ -12,7 +12,7 @@ RUN apt-get update -q \
     && rm -rf /var/lib/apt/lists/*
 
 
-ENTRYPOINT ["gunicorn", "main:app", "--workers","2", "--bind","0:0:0:0:8080"]
+ENTRYPOINT ["sudo", "gunicorn", "main:app", "--workers","2", "--bind","0:0:0:0:8080"]
 # ENTRYPOINT ["python3","main.py"]
 # ENTRYPOINT ['/bin/bash','-l','-c']
 
