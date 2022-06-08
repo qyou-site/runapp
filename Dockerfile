@@ -5,9 +5,9 @@ WORKDIR /pose
 COPY . /pose
 
 RUN apt-get update -q \
-    && pip install --upgrade pip setuptools wheel  \
     && apt-get install ffmpeg libsm6 libxext6 git -y \
     && apt-get clean \
+    && pip install --upgrade pip setuptools wheel  \
     && pip install -r requirements.txt --no-cache-dir \
     && rm -rf /var/lib/apt/lists/*
 
