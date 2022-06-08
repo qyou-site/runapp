@@ -11,4 +11,6 @@ RUN apt-get update -q \
     && pip install -r requirements.txt --no-cache-dir \
     && rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT ['python', 'main.py']
+ENTRYPOINT ['/bin/bash','-l','-c']
+
+CMD ['python', 'main.py']
