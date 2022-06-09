@@ -6,8 +6,8 @@ import pandas as pd
 import random
 from flask_login import login_required, current_user
 from datetime import datetime
-from .capture_frames_run import frameCaptureRun
-from .capture_frames_squat import frameCaptureSquat
+from app.capture_frames_run import frameCaptureRun
+from app.capture_frames_squat import frameCaptureSquat
 import cv2
 import gspread
 
