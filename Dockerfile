@@ -11,7 +11,7 @@ RUN apt-get update -q \
     && pip install -r requirements.txt --no-cache-dir \
     && rm -rf /var/lib/apt/lists/*
 
-CMD ["chmod", "777", '/pose']
+# CMD ["chmod", "777", '/pose']
 
 ENTRYPOINT ["gunicorn", "--workers","2", "--bind","0:0:0:0:8080","main:app"]
 # ENTRYPOINT ["python3","main.py"]
