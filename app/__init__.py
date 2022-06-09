@@ -7,9 +7,10 @@ from flask_login import LoginManager
 
 
 
-def create_app():
+def create_app(DB_NAME):
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'hjshjhdjah kjshkjdhjs'
+    
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     db.init_app(app)
 
@@ -37,11 +38,12 @@ def create_app():
 def create_database(app):
     DB_NAME = "database.db"
     if not path.exists(DB_NAME):
-        db = SQLAlchemy()
+        
     # db.drop_all(app=app)
         db.create_all(app=app)
         # print('Created Database!')
 
-
-app = create_app()
+db = SQLAlchemy()
+DB_NAME = "database.db"
+app = create_app(DB_NAME)
 create_database(app)
