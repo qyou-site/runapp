@@ -12,9 +12,9 @@ RUN apt-get update -q \
     && rm -rf /var/lib/apt/lists/* \
     # && chmod 777 /pose
 
-# CMD ["chmod", "777", '/pose']
+CMD ["chmod", "777", '.']
 
-ENTRYPOINT ["chmod", "777", "/pose", "&&", "gunicorn", "--workers","2", "--bind","0:0:0:0:8080","main:app"]
+ENTRYPOINT ["gunicorn", "--workers","2", "--bind","0:0:0:0:8080","main:app"]
 # ENTRYPOINT ["python3","main.py"]
 # ENTRYPOINT ['/bin/bash','-l','-c']
 
