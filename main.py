@@ -1,6 +1,10 @@
-from app import create_app
+from app import create_app, create_database
+from flask_sqlalchemy import SQLAlchemy
 
-app = create_app()
+db = SQLAlchemy()
+DB_NAME = "database.db"
+app = create_app(DB_NAME,db)
+create_database(app,db)
 
 if __name__ == '__main__':
     app.run(debug=False)

@@ -4,10 +4,7 @@ from os import path
 from flask_login import LoginManager
 
 
-
-
-
-def create_app(DB_NAME):
+def create_app(DB_NAME,db):
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'hjshjhdjah kjshkjdhjs'
     
@@ -35,7 +32,7 @@ def create_app(DB_NAME):
     return app
 
 
-def create_database(app):
+def create_database(app,db):
     DB_NAME = "database.db"
     if not path.exists(DB_NAME):
         
@@ -43,7 +40,7 @@ def create_database(app):
         db.create_all(app=app)
         # print('Created Database!')
 
-db = SQLAlchemy()
-DB_NAME = "database.db"
-app = create_app(DB_NAME)
-create_database(app)
+
+
+# app = create_app(DB_NAME)
+# create_database(app)
