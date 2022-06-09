@@ -9,7 +9,8 @@ RUN apt-get update -q \
     && apt-get clean \
     && pip install --upgrade pip setuptools wheel  \
     && pip install -r requirements.txt --no-cache-dir \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && chmod 777 /pose
 
 # CMD ["chmod", "777", '/pose']
 
