@@ -125,7 +125,7 @@ def save_img():
         else:
             df_logs = pd.DataFrame()
 
-        index = len(df_labels.index)
+        index = len(df_labels.index)+1
         date = datetime.now().strftime("%Y/%m/%d-%H:%M:%S")
         user_id = current_user.id
         user_email = current_user.email
