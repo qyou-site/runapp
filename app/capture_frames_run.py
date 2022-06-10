@@ -26,8 +26,8 @@ class frameCaptureRun():
 
     def run(self, video):
         # Setup mediapipe instance
-        FRAME_RATE = 20
-        FPS = 20
+        # FRAME_RATE = 20
+        # FPS = 20
         SHRINK_RATIO = 0.25
         mp_drawing = mp.solutions.drawing_utils
         mp_pose = mp.solutions.pose

@@ -26,14 +26,14 @@ class frameCaptureSquat():
 
     def run(self, video):
         # Setup mediapipe instance
-        FRAME_RATE = 5
-        FPS = 5
+        # FRAME_RATE = 5
+        # FPS = 5
         SHRINK_RATIO = 0.25
         mp_drawing = mp.solutions.drawing_utils
         mp_pose = mp.solutions.pose
         cap = cv2.VideoCapture(video)
-        cap.set(5,FPS)
-        cap.set(7,FRAME_RATE)
+        # cap.set(5,FPS)
+        # cap.set(7,FRAME_RATE)
 
 
         with mp_pose.Pose(min_detection_confidence=0.1, min_tracking_confidence=0.1) as pose:

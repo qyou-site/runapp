@@ -10,6 +10,7 @@ from app.capture_frames_run import frameCaptureRun
 from app.capture_frames_squat import frameCaptureSquat
 import cv2
 import gspread
+import time
 
 # sa = gspread.service_account(filename="newagent-pss9-9047ed9cb1b8.json")
 # sh = sa.open_by_url('https://docs.google.com/spreadsheets/d/1YhmeuynXcs9Bo-Sl26HxsIkkrAbHdPMClxFh_nYVPvk')
@@ -33,6 +34,7 @@ def upload_vid():
         vid_bytes = request.files['video'].read()
         with open('temp.mp4', "wb") as f:
             f.write(vid_bytes)
+        time.sleep(10)
         capture.run('temp.mp4')
         os.remove('temp.mp4')
         message='Success!'
