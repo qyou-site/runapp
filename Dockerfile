@@ -14,7 +14,7 @@ RUN apt-get update -q \
 
 CMD ["chmod", "777", "/pose"]
 
-ENTRYPOINT ["gunicorn", "--workers","1", "--bind","0:0:0:0:8080","main:app"]
+ENTRYPOINT ["gunicorn","--worker-tmp-dir", "/dev/shm", "main:app"]
 # ENTRYPOINT ["python3","main.py"]
 # ENTRYPOINT ['/bin/bash','-l','-c']
 
