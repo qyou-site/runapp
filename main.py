@@ -6,4 +6,4 @@ app = create_app(DB_NAME,db)
 create_database(app,db)
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=False,threaded=True)
