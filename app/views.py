@@ -63,7 +63,7 @@ def save_img():
         try:
             df_meta = pd.read_csv('metadata.csv')
         except FileNotFoundError as e:
-            return render_template('upload.html',user=current_user)
+            return 'Please upload a video at /upload'
         index = random.randint(0,len(df_meta)-1) ###check whether its squat or running
         img_choice = df_meta.loc[index,'filename']
         img_frame = df_meta.loc[index,'frame']
