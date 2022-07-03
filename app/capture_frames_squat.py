@@ -11,10 +11,11 @@ from utils.global_pose import UtilsGen
 from script_frames import front_squat, side_squat, back_squat
 
 class frameCaptureSquat():
-    def __init__(self, frame_angle, side_direction, debug):
+    def __init__(self, frame_angle, side_direction, height, debug):
         self.frame_angle = frame_angle
-        self.debug = debug
         self.side_direction = side_direction
+        self.height = height
+        self.debug = debug
 
     def init_metrics(self):
         if self.frame_angle == 'side':
@@ -32,14 +33,21 @@ class frameCaptureSquat():
         mp_drawing = mp.solutions.drawing_utils
         mp_pose = mp.solutions.pose
         cap = cv2.VideoCapture(video)
-        # cap.set(5,FPS)
-        # cap.set(7,FRAME_RATE)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        # print("Frames per second using video.get(cv2.CV_CAP_PROP_FPS): {0}".format(fps))
+        # print('Total number of frames: {0}'.format(total_frames))
+        frames_second_to_cut = 2
 
-
-        with mp_pose.Pose(min_detection_confidence=0.1, min_tracking_confidence=0.1) as pose:
+        
+        with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             frame_count = 0
             while cap.isOpened():
-                frame_count +=1
+                frame_count+=1
+                if frame_count <= fps*frames_second_to_cut:
+                    continue
+                if frame_count > (total_frames - fps*frames_second_to_cut):
+                    break
                 ret, frame = cap.read()
                 if ret:
                     # if frame_count % 10000 == 0:
@@ -67,7 +75,7 @@ class frameCaptureSquat():
                         print('None')
                         continue
                     landmarks = results.pose_landmarks.landmark
-                    PoseUtils = UtilsGen(landmarks)
+                    PoseUtils = UtilsGen(landmarks, self.height)
                     # if else statement
                     if self.frame_angle == 'side':
                         LandmarkIdentifier = side_squat.sideLandmarkIdentifier(
@@ -86,8 +94,8 @@ class frameCaptureSquat():
                     left_leg_angle = PoseUtils.calculate_angle(
                         left_hip, left_knee, left_ankle)
                     # Visualise angle
-                    PoseUtils.showText(
-                        left_leg_angle, left_knee, image, 'left leg', self.debug)
+                    # image = PoseUtils.showText(
+                    #     left_leg_angle, left_knee, image, 'left leg', self.debug)
 
                     # RIGHT LEG
                     # Get right leg coordinates
@@ -96,8 +104,8 @@ class frameCaptureSquat():
                     right_leg_angle = PoseUtils.calculate_angle(
                         right_hip, right_knee, right_ankle)
                     # Visualise angle
-                    PoseUtils.showText(
-                        right_leg_angle, right_knee, image, 'right leg', self.debug)
+                    # image = PoseUtils.showText(
+                    #     right_leg_angle, right_knee, image, 'right leg', self.debug)
 
                     # LEFT HIP
                     # Get left hip coordinates
@@ -106,8 +114,8 @@ class frameCaptureSquat():
                     left_hip_angle = PoseUtils.calculate_angle(
                         left_shoulder, left_hip, left_knee)
                     # Visualise angle
-                    PoseUtils.showText(
-                        left_hip_angle, left_hip, image, 'left hip', self.debug)
+                    # image = PoseUtils.showText(
+                    #     left_hip_angle, left_hip, image, 'left hip', self.debug)
 
                     # RIGHT HIP
                     # Get right hip coordinates
@@ -116,8 +124,8 @@ class frameCaptureSquat():
                     right_hip_angle = PoseUtils.calculate_angle(
                         right_shoulder, right_hip, right_knee)
                     # Visualise angle
-                    PoseUtils.showText(
-                        right_hip_angle, right_hip, image, 'right hip', self.debug)
+                    # image = PoseUtils.showText(
+                    #     right_hip_angle, right_hip, image, 'right hip', self.debug)
 
                     # LEFT arm
                     # Get left arm coordinates
@@ -126,7 +134,7 @@ class frameCaptureSquat():
                     left_arm_angle = PoseUtils.calculate_angle(
                         left_shoulder, left_elbow, left_wrist)
                     # Visualise angle
-                    # PoseUtils.showText(
+                    # image = PoseUtils.showText(
                     #     left_arm_angle, left_elbow, image, 'left arm', self.debug)
 
                     # RIGHT arm
@@ -136,7 +144,7 @@ class frameCaptureSquat():
                     right_arm_angle = PoseUtils.calculate_angle(
                         right_shoulder, right_elbow, right_wrist)
                     # Visualise angle
-                    # PoseUtils.showText(
+                    # image = PoseUtils.showText(
                     #     right_hip_angle, right_hip, image, 'right hip', self.debug)
 
 
@@ -153,20 +161,25 @@ class frameCaptureSquat():
                             temp_coor_1 = [right_ankle[0]+x_dist,right_ankle[1]-y_dist]
                             back_leg_angle = PoseUtils.calculate_angle(right_knee, right_ankle, temp_coor_1)
 
+
                             ###criteria 2
                             temp_coor_2 = [right_shoulder[0]+x_dist,right_shoulder[1]-y_dist]
                             back_arm_angle = PoseUtils.calculate_angle(right_elbow,right_shoulder,temp_coor_2)
-
-                            PoseUtils.showText(
-                                temp_coor_1, temp_coor_1, image, 'temp coordinates crit 1', self.debug)
-                            PoseUtils.showText(
-                                temp_coor_2, temp_coor_2, image, 'temp coordinates crit 2', self.debug)
+                            image = PoseUtils.showText(
+                                back_leg_angle, right_ankle, image, 'Leg-to-back angle', self.debug)
+                            image = PoseUtils.showText(
+                                back_arm_angle, right_elbow, image, 'Arm-to-back angle', self.debug)
+                            # image = PoseUtils.showText(
+                            #     temp_coor_1, temp_coor_1, image, 'temp coordinates crit 1', self.debug)
+                            # image = PoseUtils.showText(
+                            #     temp_coor_2, temp_coor_2, image, 'temp coordinates crit 2', self.debug)
                             # frame (lowest hip to ankle distance)
                             if right_hip_to_ankle_dist < self.metrics['hip_to_ankle_dist']:
                                 frame_to_save_1_2, self.metrics['hip_to_ankle_dist'], self.metrics['crit_1']['back_leg_angle'], self.metrics['crit_2']['back_arm_angle'] = LandmarkIdentifier.frame_criteria_1_2(
-                                    frame, right_hip_to_ankle_dist, back_leg_angle, back_arm_angle)
+                                    image, right_hip_to_ankle_dist, back_leg_angle, back_arm_angle)
                                 # frame_to_save_2, self.metrics['crit_2']['back_arm_angle'] = LandmarkIdentifier.frame_criteria_2(
                                 #     frame, back_arm_angle)
+
                         
                         elif self.side_direction == 'left':
                             left_hip_to_ankle_dist = PoseUtils.calculate_distance(left_hip, left_ankle, image, self.debug)
@@ -181,15 +194,18 @@ class frameCaptureSquat():
                             ###criteria 2
                             temp_coor_2 = [left_shoulder[0]-x_dist,left_shoulder[1]-y_dist]
                             back_arm_angle = PoseUtils.calculate_angle(left_elbow,left_shoulder,temp_coor_2)
-
-                            PoseUtils.showText(
-                                temp_coor_1, temp_coor_1, image, 'temp coordinates crit 1', self.debug)
-                            PoseUtils.showText(
-                                temp_coor_2, temp_coor_2, image, 'temp coordinates crit 2', self.debug)
+                            image = PoseUtils.showText(
+                                back_leg_angle, left_ankle, image, 'Leg-to-back angle', self.debug)
+                            image = PoseUtils.showText(
+                                back_arm_angle, left_shoulder, image, 'Arm-to-back angle', self.debug)
+                            # image = PoseUtils.showText(
+                            #     temp_coor_1, temp_coor_1, image, 'temp coordinates crit 1', self.debug)
+                            # image = PoseUtils.showText(
+                            #     temp_coor_2, temp_coor_2, image, 'temp coordinates crit 2', self.debug)
                             # frame (lowest hip to ankle distance)
                             if left_hip_to_ankle_dist < self.metrics['hip_to_ankle_dist']:
                                 frame_to_save_1_2, self.metrics['hip_to_ankle_dist'], self.metrics['crit_1']['back_leg_angle'], self.metrics['crit_2']['back_arm_angle'] = LandmarkIdentifier.frame_criteria_1_2(
-                                    frame, left_hip_to_ankle_dist, back_leg_angle,back_arm_angle)
+                                    image, left_hip_to_ankle_dist, back_leg_angle,back_arm_angle)
                                 # frame_to_save_2, self.metrics['crit_2']['back_arm_angle'] = LandmarkIdentifier.frame_criteria_2(
                                 #     frame, back_arm_angle)
                         if not flag:
@@ -204,47 +220,6 @@ class frameCaptureSquat():
                         knee_to_knee_dist = PoseUtils.calculate_distance(left_knee,right_knee, image, self.debug)
 
 
-                        # if left_shoulder[1] < right_shoulder[1]:
-                        #     shoulder_hor = [
-                        #         left_shoulder[0], right_shoulder[1]]
-                        #     shoulder_hor_angle = PoseUtils.calculate_angle(
-                        #         left_shoulder, right_shoulder, shoulder_hor)
-                        #     PoseUtils.showText(
-                        #         shoulder_hor_angle, shoulder_hor, image, 'shoulder angle', self.debug)
-                        # else:
-                        #     shoulder_hor = [
-                        #         right_shoulder[0], left_shoulder[1]]
-                        #     shoulder_hor_angle = PoseUtils.calculate_angle(
-                        #         right_shoulder, left_shoulder, shoulder_hor)
-                        #     PoseUtils.showText(
-                        #         shoulder_hor_angle, shoulder_hor, image, 'shoulder angle', self.debug)
-                        # # Hips
-                        # if left_hip[1] < right_hip[1]:
-                        #     hip_hor = [left_hip[0], right_hip[1]]
-                        #     hip_hor_angle = PoseUtils.calculate_angle(
-                        #         left_hip, right_hip, hip_hor)
-                        #     PoseUtils.showText(
-                        #         hip_hor_angle, hip_hor, image, 'hip angle', self.debug)
-                        # else:
-                        #     hip_hor = [right_hip[0], left_hip[1]]
-                        #     hip_hor_angle = PoseUtils.calculate_angle(
-                        #         right_hip, left_hip, hip_hor)
-                        #     PoseUtils.showText(
-                        #         hip_hor_angle, hip_hor, image, 'hip angle', self.debug)
-                        # # Knees
-                        # if left_knee[1] < right_knee[1]:
-                        #     knee_hor = [left_knee[0], right_knee[1]]
-                        #     knee_hor_angle = PoseUtils.calculate_angle(
-                        #         left_knee, right_knee, knee_hor)
-                        #     PoseUtils.showText(
-                        #         knee_hor_angle, knee_hor, image, 'knee angle', self.debug)
-                        # else:
-                        #     knee_hor = [right_knee[0], left_knee[1]]
-                        #     knee_hor_angle = PoseUtils.calculate_angle(
-                        #         right_knee, left_knee, knee_hor)
-                        #     PoseUtils.showText(
-                        #         knee_hor_angle, knee_hor, image, 'knee angle', self.debug)
-
                         right_flag = PoseUtils.capture_frame_critera(right_knee, right_hip, right_ankle)
                         left_flag = PoseUtils.capture_frame_critera(left_knee, left_hip, left_ankle)
 
@@ -252,8 +227,11 @@ class frameCaptureSquat():
                             break
 
                         if hip_to_ankle_dist < self.metrics['hip_to_ankle_dist']:
+                            image = PoseUtils.showText(
+                                    knee_to_knee_dist, left_knee, image, 'Knees distance', self.debug)
+                            image = PoseUtils.draw_line(left_knee,right_knee,image)
                             frame_to_save_3, self.metrics['hip_to_ankle_dist'], self.metrics['knee_to_knee_dist'] = LandmarkIdentifier.frame_criteria_1(
-                                frame, hip_to_ankle_dist, knee_to_knee_dist)
+                                image, hip_to_ankle_dist, knee_to_knee_dist)
 
                     elif self.frame_angle == 'back':
                         right_hip_to_ankle_dist = PoseUtils.calculate_distance(right_hip, right_ankle, image, self.debug)
@@ -265,25 +243,14 @@ class frameCaptureSquat():
                             hip_hor = [left_hip[0], right_hip[1]]
                             hip_hor_angle = PoseUtils.calculate_angle(
                                 left_hip, right_hip, hip_hor)
-                            PoseUtils.showText(
+                            image = PoseUtils.showText(
                                 hip_hor_angle, hip_hor, image, 'hip angle', self.debug)
                         else:
                             hip_hor = [right_hip[0], left_hip[1]]
                             hip_hor_angle = PoseUtils.calculate_angle(
                                 right_hip, left_hip, hip_hor)
-                            PoseUtils.showText(
+                            image = PoseUtils.showText(
                                 hip_hor_angle, hip_hor, image, 'hip angle', self.debug)
-
-                        # right_ankle, right_heel, right_foot_index = PoseUtils.right_foot_landmarks()
-                        # right_feet_hor = [right_foot_index[0], right_heel[1]]
-                        # right_feet_angle = PoseUtils.calculate_angle(right_foot_index,right_heel,right_feet_hor)
-                        # PoseUtils.showText(right_feet_angle, right_foot_index, image, 'right feet angle', self.debug)
-
-                        # left_ankle, left_heel, left_foot_index = PoseUtils.left_foot_landmarks()
-                        # left_feet_hor = [left_foot_index[0], left_heel[1]]
-                        # left_feet_angle = PoseUtils.calculate_angle(left_foot_index,left_heel,left_feet_hor)
-                        # PoseUtils.showText(left_feet_angle, left_foot_index, image, 'left feet angle', self.debug)
-
                         right_flag = PoseUtils.capture_frame_critera(right_ankle,right_knee, right_hip)
                         left_flag = PoseUtils.capture_frame_critera(left_ankle, left_knee, left_hip)
 
@@ -291,8 +258,7 @@ class frameCaptureSquat():
                             break
 
                         if hip_to_ankle_dist < self.metrics['hip_to_ankle_dist']:
-                            frame_to_save_5, self.metrics['hip_to_ankle_dist'], self.metrics['left_right_hip_angle'] = LandmarkIdentifier.frame_criteria_4(frame, hip_to_ankle_dist,hip_hor_angle)
-
+                            frame_to_save_5, self.metrics['hip_to_ankle_dist'], self.metrics['left_right_hip_angle'] = LandmarkIdentifier.frame_criteria_4(image, hip_to_ankle_dist,hip_hor_angle)
                         # if left_ankle[1] < self.metrics['left']['ankle_height_left'] and left_flag:
                         #     frame_to_save_6, self.metrics['left']['ankle_height_left'], self.metrics['left']['left_feet_angle'] = LandmarkIdentifier.frame_criteria_4(frame, left_ankle[1], left_feet_angle)
 
@@ -332,7 +298,7 @@ class frameCaptureSquat():
                 print(metrics)
                 PoseUtils.return_results(
                     self.metrics, to_save, 'side')
-                PoseUtils.capture_metadata('squat',id_crit_1,metrics, self.frame_angle)
+                PoseUtils.capture_metadata('squat',id_crit_1,metrics, self.frame_angle, self.side_direction)
                 # PoseUtils.capture_metadata(id_crit_2,self.metrics['crit_2'], self.frame_angle)
 
             elif self.frame_angle == 'front':
@@ -342,7 +308,7 @@ class frameCaptureSquat():
                 }
                 PoseUtils.return_results(
                     self.metrics, to_save,'front')
-                PoseUtils.capture_metadata('squat',id_crit_1,self.metrics, self.frame_angle)
+                PoseUtils.capture_metadata('squat',id_crit_1,self.metrics, self.frame_angle, self.side_direction)
                 # PoseUtils.capture_metadata(id_crit_2,self.metrics['left'], self.frame_angle)
 
             elif self.frame_angle == 'back':
@@ -352,7 +318,7 @@ class frameCaptureSquat():
                 }
                 PoseUtils.return_results(
                     self.metrics, to_save, 'back')
-                PoseUtils.capture_metadata('squat',id_crit_1,self.metrics, self.frame_angle)
+                PoseUtils.capture_metadata('squat',id_crit_1,self.metrics, self.frame_angle, self.side_direction)
                 # PoseUtils.capture_metadata(id_crit_2,self.metrics['left'], self.frame_angle)
 
             print('Successfully uploaded and grabbed frames')
