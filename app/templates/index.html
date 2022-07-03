@@ -35,10 +35,13 @@
   <h1>Upload score</h1>
   <!-- <h2> {{ user, user.id, user.email, user.first_name }}</h2> -->
   <!-- <h1> {{ metadata }}</h1> -->
-  <form method=post enctype=multipart/form-data>
+  <form method=post enctype=multipart/form-data >
     <img id="displayImg" src="static/{{ img_name }}" alt="photo">
     <br>
     <table>
+      <tr>Image Name: </tr>
+      <tr>{{ img_name.split('/')[1] }}</tr>
+      <br>
       {% for key, value in metadata.items() if key != 'filename' %}
       <tr>{{ key }}: </tr>
       <tr>{{ value }}</tr>
@@ -143,7 +146,9 @@
     <br><br>
     <input type="hidden" value = "{{ img_name }}" name='img_name'>
     <input type="hidden" value = "{{ metadata.video_type }}" name='video_type'>
-    <input type=submit value=Upload>
+    <input type="hidden" value = "{{ metadata.frame }}" name='frame'>
+    <input type="hidden" value = "{{ metadata.side_direction }}" name='side_direction'>
+    <input type=submit value=Upload onclick="this.form.submit(); this.disabled=true; this.innerText='Sending…'; ">
   </form>
   <h2>{{ text }}</h2>
 </body>
