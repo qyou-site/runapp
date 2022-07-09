@@ -101,13 +101,15 @@ class UtilsGen():
         count=1
         for key, value in dict_to_save.items():
             filename = str(key)+'.png'
-            cv2.imwrite(os.path.join('app','static',filename), value)
+            
+            filepath = os.path.join('app','static',filename)
+            cv2.imwrite(filepath, value)
 
-            client.upload_file(os.path.join('app','static',filename),  # Path to local file
+            client.upload_file(filepath,  # Path to local file
                             'pose-app',  # Name of Space
                             os.path.join('static',frame,filename),ExtraArgs={ 'ACL': 'public-read' }) # Name for remote file     
             count+=1
-            os.remove(os.path.join('app','static',filename))
+            os.remove(filepath)
 
     def left_arm_landmarks(self):
         left_shoulder = [self.landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
