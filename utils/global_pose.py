@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 from datetime import datetime
 import gspread
+from boto3 import session
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
@@ -13,7 +14,7 @@ mp_pose = mp.solutions.pose
 class UtilsGen():
     def __init__(self, landmarks, height):
         self.landmarks = landmarks
-        self.height = height
+        self.height = int(height)
     
     def calculate_angle(self, a, b, c):  # global utils
         a = np.array(a)  # First
@@ -88,11 +89,25 @@ class UtilsGen():
         return flag
 
     def return_results(self, metrics, dict_to_save, frame):
+        ACCESS_ID = 'QPHTN5KR6NLVV6JRNPMG'
+        SECRET_KEY = '6fXDDDfMtWPPNUBDJDYnwH8Xouh66mi0OLBZTbus8cA'
+        sess = session.Session()
+        client = sess.client('s3',
+                                region_name='ams3',
+                                endpoint_url='https://ams3.digitaloceanspaces.com',
+                                aws_access_key_id=ACCESS_ID,
+                                aws_secret_access_key=SECRET_KEY)
+        
+        count=1
         for key, value in dict_to_save.items():
-            cv2.imwrite(os.path.join('app','static',frame,str(key)+'.png'), value)
-# 'static'+frame+'/'+str(key)+'
-        for key, value in metrics.items():
-            print(f'{key} : {value}')
+            filename = str(key)+'.png'
+            cv2.imwrite(os.path.join('app','static',filename), value)
+
+            client.upload_file(os.path.join('app','static',filename),  # Path to local file
+                            'pose-app',  # Name of Space
+                            os.path.join('static',frame,filename),ExtraArgs={ 'ACL': 'public-read' }) # Name for remote file     
+            count+=1
+            os.remove(os.path.join('app','static',filename))
 
     def left_arm_landmarks(self):
         left_shoulder = [self.landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,

@@ -11,6 +11,7 @@ from app.capture_frames_squat import frameCaptureSquat
 import cv2
 import gspread
 import time
+from boto3 import session
 
 views = Blueprint('views',__name__)
 
@@ -21,7 +22,16 @@ def upload_vid():
     if request.method == 'GET':
         return render_template('upload.html',user=current_user)
     elif request.method == 'POST':
-        print('form keys', request.form.keys())
+        ACCESS_ID = 'QPHTN5KR6NLVV6JRNPMG'
+        SECRET_KEY = '6fXDDDfMtWPPNUBDJDYnwH8Xouh66mi0OLBZTbus8cA'
+
+        sess = session.Session()
+        client = sess.client('s3',
+                                region_name='ams3',
+                                endpoint_url='https://ams3.digitaloceanspaces.com',
+                                aws_access_key_id=ACCESS_ID,
+                                aws_secret_access_key=SECRET_KEY)
+
         if request.form['vid_type'] == 'squat':
             capture = frameCaptureSquat(request.form['frame'], request.form['side-direction'], request.form['height'], True)
         elif request.form['vid_type'] == 'run':
@@ -31,14 +41,16 @@ def upload_vid():
         with open('temp.mp4', "wb") as f:
             f.write(vid_bytes)
         time.sleep(2)
-        capture.run('temp.mp4')
+        uuid = capture.run('temp.mp4')
+
+        # Upload a file to your Space
+        client.upload_file('temp.mp4',  # Path to local file
+                        'pose-app',  # Name of Space
+                        f'videos/{uuid}.mp4')  # Name for remote file
         os.remove('temp.mp4')
         message='Success!'
-
         
         return message,request.form 
-
-
 
 @views.route('/', methods=['GET', 'POST'])
 @login_required
@@ -55,7 +67,9 @@ def save_img():
         index = random.randint(0,len(df_meta)-1) ###check whether its squat or running
         img_choice = df_meta.loc[index,'filename']
         img_frame = df_meta.loc[index,'frame']
+        # do_dir = 'https://pose-app.ams3.digitaloceanspaces.com/static'
         img = os.path.join(img_frame,img_choice)
+        print(url_for('static',filename=img))
         metadata = df_meta[df_meta['filename']==img_choice]
         metadata.dropna(inplace=True, axis=1)
         metadata = metadata.iloc[0]

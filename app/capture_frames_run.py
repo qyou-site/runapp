@@ -310,6 +310,7 @@ class frameCaptureRun():
 
             print('Successfully uploaded and grabbed frames')
             # cv2.destroyAllWindows()
+            return id_crit_1
 
 
 if __name__ == '__main__':

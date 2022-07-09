@@ -2,8 +2,11 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from os import path
 from flask_login import LoginManager
+from flask_s3 import FlaskS3
+
 
 db = SQLAlchemy()
+s3 = FlaskS3()
 
 def create_app(DB_NAME,db):
     app = Flask(__name__)
@@ -11,6 +14,15 @@ def create_app(DB_NAME,db):
     
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     db.init_app(app)
+
+    ACCESS_ID = 'QPHTN5KR6NLVV6JRNPMG'
+    SECRET_KEY = '6fXDDDfMtWPPNUBDJDYnwH8Xouh66mi0OLBZTbus8cA'
+
+    app.config['AWS_ACCESS_KEY_ID'] = ACCESS_ID
+    app.config['AWS_SECRET_ACCESS_KEY'] = SECRET_KEY
+    app.config['FLASKS3_BUCKET_DOMAIN'] = 'ams3.digitaloceanspaces.com'
+    app.config['FLASKS3_BUCKET_NAME'] = 'pose-app'
+    s3.init_app(app)
 
     from .views import views
     from .auth import auth

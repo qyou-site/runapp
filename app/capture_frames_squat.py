@@ -295,7 +295,6 @@ class frameCaptureSquat():
                    'back_leg_angle': self.metrics['crit_1']['back_leg_angle'],
                     'back_arm_angle': self.metrics['crit_2']['back_arm_angle']
                 }
-                print(metrics)
                 PoseUtils.return_results(
                     self.metrics, to_save, 'side')
                 PoseUtils.capture_metadata('squat',id_crit_1,metrics, self.frame_angle, self.side_direction)
@@ -323,6 +322,7 @@ class frameCaptureSquat():
 
             print('Successfully uploaded and grabbed frames')
             # cv2.destroyAllWindows()
+            return id_crit_1
 
 
 if __name__ == '__main__':
