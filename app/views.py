@@ -36,12 +36,16 @@ def upload_vid():
             capture = frameCaptureSquat(request.form['frame'], request.form['side-direction'], request.form['height'], True)
         elif request.form['vid_type'] == 'run':
             capture = frameCaptureRun(request.form['frame'], request.form['side-direction'], request.form['height'], True)
+
+
         capture.init_metrics()
         vid_bytes = request.files['video'].read()
         with open('temp.mp4', "wb") as f:
             f.write(vid_bytes)
-        time.sleep(2)
         uuid = capture.run('temp.mp4')
+        if uuid == -1:
+            message = 'Please upload a video that is less than 10 seconds!'
+            return render_template('upload.html',user=current_user, message=message)
 
         # Upload a file to your Space
         client.upload_file('temp.mp4',  # Path to local file

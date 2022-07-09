@@ -39,6 +39,8 @@ class frameCaptureRun():
         # print("Frames per second using video.get(cv2.CV_CAP_PROP_FPS): {0}".format(fps))
         # print('Total number of frames: {0}'.format(total_frames))
         frames_second_to_cut = 2
+        if total_frames / fps > 10:
+            return -1
 
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             frame_count = 0
