@@ -16,6 +16,77 @@ class UtilsGen():
         self.landmarks = landmarks
         self.height = int(height)
     
+    # def calc_height
+    def height_multiply_factor_frontback(self,img, debug, height, nose, left_ankle, right_ankle, max_height_pixels, frame_type):
+        offset = 11 + 9 #up to nose and ankle
+        height_offset = height - offset
+        mid_ankle = [(left_ankle[0]+right_ankle[0])/2,min(left_ankle[1],right_ankle[1])]
+        # self.draw_line(nose,mid_ankle,img)
+
+        height_dist = self.calculate_distance_for_ratio(mid_ankle,nose,img,debug) #gives pixel values distance
+
+        if frame_type == 'squat':
+            if height_dist > max_height_pixels:
+                max_height_pixels = height_dist
+        elif frame_type == 'run':
+            max_height_pixels = height_dist
+
+        cm_to_pixel_ratio = height_offset/max_height_pixels
+        # self.showText(cm_to_pixel_ratio*height_dist, mid_ankle, img, 'height of person (offset)',debug)
+
+        return img, cm_to_pixel_ratio, max_height_pixels
+
+    def height_multiply_factor_side(self, img, debug, height,nose, left_shoulder,right_shoulder,left_hip,right_hip,left_knee,right_knee,left_ankle,right_ankle, max_height_pixels,frame_type, frame_direction):
+        offset = 25 + 9 #up to shoulder and ankle
+        height_offset = height - offset
+        mid_ankle = [(left_ankle[0]+right_ankle[0])/2,min(left_ankle[1],right_ankle[1])]
+        # self.draw_line(nose,mid_ankle,img)W
+        if frame_direction == 'left':
+            shoulder_to_hip_dist = self.calculate_distance_for_ratio(left_shoulder,left_hip,img,debug) #gives pixel values distance
+            img = self.draw_line(left_shoulder,left_hip,img)
+            hip_to_knee_dist = self.calculate_distance_for_ratio(left_hip,left_knee,img,debug) #gives pixel values distance
+            img = self.draw_line(left_hip,left_knee,img)
+            knee_to_ankle_dist = self.calculate_distance_for_ratio(left_knee,left_ankle,img,debug) #gives pixel values distance
+            img = self.draw_line(left_knee,left_ankle,img)
+        
+            height_dist = shoulder_to_hip_dist + hip_to_knee_dist + knee_to_ankle_dist #gives pixel values distance
+        elif frame_direction == 'right':
+            shoulder_to_hip_dist = self.calculate_distance_for_ratio(right_shoulder,right_hip,img,debug) #gives pixel values distance
+            img = self.draw_line(right_shoulder,right_hip,img)
+            hip_to_knee_dist = self.calculate_distance_for_ratio(right_hip,right_knee,img,debug) #gives pixel values distance
+            img = self.draw_line(right_hip,right_knee,img)
+            knee_to_ankle_dist = self.calculate_distance_for_ratio(right_knee,right_ankle,img,debug) #gives pixel values distance
+            img = self.draw_line(right_knee,right_ankle,img)
+            height_dist = shoulder_to_hip_dist + hip_to_knee_dist + knee_to_ankle_dist #gives pixel values distance
+
+
+        if frame_type == 'squat':
+            if height_dist > max_height_pixels:
+                max_height_pixels = height_dist
+        elif frame_type == 'run':
+            max_height_pixels = height_dist
+
+        cm_to_pixel_ratio = height_offset/max_height_pixels
+        # self.showText(cm_to_pixel_ratio*height_dist, mid_ankle, img, 'height of person (offset)',debug)
+
+        return img, cm_to_pixel_ratio, max_height_pixels
+
+    def calculate_distance_for_ratio(self, a, b, img, debug):  # global utils
+        width = img.shape[1]
+        height = img.shape[0]
+        x1 = a[1] * width
+        y1 = a[0] * height
+        x2 = b[1] * width
+        y2 = b[0] * height
+
+        dist = ((x1-x2)**2+(y1-y2)**2)**0.5
+
+        
+        # if debug:
+        #     cv2.line(img, (int(x1), int(y1)), (int(x2), int(y2)),
+        #              (255, 0, 0), thickness=1)
+        return dist
+
     def calculate_angle(self, a, b, c):  # global utils
         a = np.array(a)  # First
         b = np.array(b)  # Mid
@@ -30,16 +101,15 @@ class UtilsGen():
 
         return angle
 
-    def calculate_distance(self, a, b, img, debug):  # global utils
-        width = img.shape[1]
-        height = img.shape[0]
+    def calculate_distance(self, a, b, img, debug,height_multiple_factor,width_multiple_factor):  # global utils
+        width = img.shape[1]*height_multiple_factor
+        height = img.shape[0]*width_multiple_factor
         x1 = a[1] * width
         y1 = a[0] * height
         x2 = b[1] * width
         y2 = b[0] * height
 
         dist = ((x1-x2)**2+(y1-y2)**2)**0.5
-
         
         # if debug:
         #     cv2.line(img, (int(x1), int(y1)), (int(x2), int(y2)),
@@ -111,6 +181,8 @@ class UtilsGen():
             count+=1
             os.remove(filepath)
 
+
+
     def left_arm_landmarks(self):
         left_shoulder = [self.landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
                          self.landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
@@ -130,6 +202,12 @@ class UtilsGen():
                        self.landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
 
         return right_shoulder, right_elbow, right_wrist
+
+    def nose_landmarks(self):
+        nose = [self.landmarks[mp_pose.PoseLandmark.NOSE.value].x,
+                         self.landmarks[mp_pose.PoseLandmark.NOSE.value].y]
+
+        return nose
 
     def left_leg_landmarks(self):
         left_hip = [self.landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,

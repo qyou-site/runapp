@@ -14,7 +14,7 @@ class frameCaptureSquat():
     def __init__(self, frame_angle, side_direction, height, debug):
         self.frame_angle = frame_angle
         self.side_direction = side_direction
-        self.height = height
+        self.height = int(height)
         self.debug = debug
 
     def init_metrics(self):
@@ -39,8 +39,9 @@ class frameCaptureSquat():
         # print('Total number of frames: {0}'.format(total_frames))
         frames_second_to_cut = 2
         print(fps, total_frames)
-        if total_frames / fps > 10:
-            return -1
+        # if total_frames / fps > 10:
+        #     return -1
+        person_height_pixels = 0
 
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             frame_count = 0
@@ -89,6 +90,10 @@ class frameCaptureSquat():
                         LandmarkIdentifier = back_squat.backLandmarkIdentifier(landmarks)
 
                     # grab coordinates (method)
+
+                    # NOSE
+                    nose = PoseUtils.nose_landmarks()
+
                     # LEFT LEG
                     # Get left leg coordinates
                     left_hip, left_knee, left_ankle = PoseUtils.left_leg_landmarks()
@@ -153,8 +158,10 @@ class frameCaptureSquat():
                     # grab calculated metrics (method)
                     if self.frame_angle == 'side':
                         flag = PoseUtils.capture_frame_critera(right_ankle, right_knee, right_hip, left_ankle, left_knee, left_hip, left_shoulder, right_shoulder)
+                        image, height_multiply_factor, person_height_pixels = PoseUtils.height_multiply_factor_side(image, self.debug, self.height,nose, left_shoulder,right_shoulder,left_hip,right_hip,left_knee,right_knee,left_ankle,right_ankle, person_height_pixels,'squat', self.side_direction)
+                        width_multiply_factor = height_multiply_factor/image.shape[0]*image.shape[1]
                         if self.side_direction == 'right':
-                            right_hip_to_ankle_dist = PoseUtils.calculate_distance(right_hip, right_ankle, image, self.debug)
+                            right_hip_to_ankle_dist = PoseUtils.calculate_distance(right_hip, right_ankle, image, self.debug, height_multiply_factor,width_multiply_factor)
                             ### to check whether they are parallel, get distance of one of them, then map it back to the other (e.g. get distance from hip to shoulders, 
                             ### map it back to ankle, then add the distance, and you have 3 points to calculate the angle - knee, ankle, mapped coor)
                             ### criteria 1
@@ -184,7 +191,7 @@ class frameCaptureSquat():
 
                         
                         elif self.side_direction == 'left':
-                            left_hip_to_ankle_dist = PoseUtils.calculate_distance(left_hip, left_ankle, image, self.debug)
+                            left_hip_to_ankle_dist = PoseUtils.calculate_distance(left_hip, left_ankle, image, self.debug, height_multiply_factor,width_multiply_factor)
                             ### to check whether they are parallel, get distance of one of them, then map it back to the other (e.g. get distance from hip to shoulders, 
                             ### map it back to ankle, then add the distance, and you have 3 points to calculate the angle - knee, ankle, mapped coor)
                             ### criteria 1
@@ -214,13 +221,19 @@ class frameCaptureSquat():
                             break
 
                     elif self.frame_angle == 'front':
-                        right_hip_to_ankle_dist = PoseUtils.calculate_distance(right_hip, right_ankle, image, self.debug)
-                        left_hip_to_ankle_dist = PoseUtils.calculate_distance(left_hip, left_ankle, image, self.debug)
+                        image, height_multiply_factor, person_height_pixels = PoseUtils.height_multiply_factor_frontback(image, self.debug, self.height,nose,left_ankle,right_ankle, person_height_pixels, 'squat')
+                        width_multiply_factor = height_multiply_factor/image.shape[0]*image.shape[1]
+                        right_hip_to_ankle_dist = PoseUtils.calculate_distance(right_hip, right_ankle, image, self.debug, height_multiply_factor,width_multiply_factor)
+                        left_hip_to_ankle_dist = PoseUtils.calculate_distance(left_hip, left_ankle, image, self.debug, height_multiply_factor,width_multiply_factor)
                         hip_to_ankle_dist = (right_hip_to_ankle_dist+left_hip_to_ankle_dist)/2
                         # FRONT
                         # Knees
-                        knee_to_knee_dist = PoseUtils.calculate_distance(left_knee,right_knee, image, self.debug)
-
+                        knee_to_knee_dist = PoseUtils.calculate_distance(left_knee,right_knee, image, self.debug, height_multiply_factor,width_multiply_factor)
+                        # hip_to_ankle_dist = int(hip_to_ankle_dist*width_multiply_factor)
+                        # knee_to_knee_dist = int(knee_to_knee_dist*width_multiply_factor)
+                        image = PoseUtils.showText(
+                                knee_to_knee_dist, left_knee, image, 'Knees distance', self.debug)
+                        image = PoseUtils.draw_line(left_knee,right_knee,image)
 
                         right_flag = PoseUtils.capture_frame_critera(right_knee, right_hip, right_ankle)
                         left_flag = PoseUtils.capture_frame_critera(left_knee, left_hip, left_ankle)
@@ -229,16 +242,20 @@ class frameCaptureSquat():
                             break
 
                         if hip_to_ankle_dist < self.metrics['hip_to_ankle_dist']:
-                            image = PoseUtils.showText(
-                                    knee_to_knee_dist, left_knee, image, 'Knees distance', self.debug)
-                            image = PoseUtils.draw_line(left_knee,right_knee,image)
                             frame_to_save_3, self.metrics['hip_to_ankle_dist'], self.metrics['knee_to_knee_dist'] = LandmarkIdentifier.frame_criteria_1(
                                 image, hip_to_ankle_dist, knee_to_knee_dist)
 
                     elif self.frame_angle == 'back':
-                        right_hip_to_ankle_dist = PoseUtils.calculate_distance(right_hip, right_ankle, image, self.debug)
-                        left_hip_to_ankle_dist = PoseUtils.calculate_distance(left_hip, left_ankle, image, self.debug)
+                        image, height_multiply_factor, person_height_pixels = PoseUtils.height_multiply_factor_frontback(image, self.debug, self.height,nose,left_ankle,right_ankle, person_height_pixels, 'squat')
+                        width_multiply_factor = height_multiply_factor/image.shape[0]*image.shape[1]
+                        right_hip_to_ankle_dist = PoseUtils.calculate_distance(right_hip, right_ankle, image, self.debug, height_multiply_factor,width_multiply_factor)
+                        left_hip_to_ankle_dist = PoseUtils.calculate_distance(left_hip, left_ankle, image, self.debug, height_multiply_factor,width_multiply_factor)
                         hip_to_ankle_dist = (right_hip_to_ankle_dist+left_hip_to_ankle_dist)/2
+                        # image = PoseUtils.showText(
+                        #         hip_to_ankle_dist, left_knee, image, 'hip to ankle distance', self.debug)
+                        # image = PoseUtils.draw_line(left_hip,left_ankle,image)
+                        # image = PoseUtils.draw_line(right_hip,right_ankle,image)
+                        # hip_to_ankle_dist = int(hip_to_ankle_dist*height_multiply_factor)
 
                         # Hips
                         if left_hip[1] < right_hip[1]:
@@ -335,7 +352,7 @@ if __name__ == '__main__':
     debug = config['params']['debug']
     testVid = config['params']['vid']
 
-    FrameCapture = frameCaptureSquat(frame_angle, side_direction, debug)
+    FrameCapture = frameCaptureSquat(frame_angle, side_direction, 100, debug)
     FrameCapture.init_metrics()
     # print(testVid)
     FrameCapture.run(testVid)

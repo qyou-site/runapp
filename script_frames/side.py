@@ -20,7 +20,7 @@ def init_metrics():
             'hip_angle': 0
         },
         'crit_2' : {
-            'ankle_height': 1,
+            'ankle_height': 10e99,
             'Ankle-to-Hip distance': 0
         }
     }
