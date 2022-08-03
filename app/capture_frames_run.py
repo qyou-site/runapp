@@ -131,7 +131,7 @@ class frameCaptureRun():
                         # print('checkpoint4')
                         if self.frame_angle == 'side':
                             flag = PoseUtils.capture_frame_critera(right_ankle, right_knee, right_hip, left_ankle, left_knee, left_hip, left_shoulder, right_shoulder)
-                            image, height_multiply_factor, person_height_pixels = PoseUtils.height_multiply_factor_side(image, self.debug, self.height,nose, left_shoulder,right_shoulder,left_hip,right_hip,left_knee,right_knee,left_ankle,right_ankle, person_height_pixels,'squat', self.side_direction)
+                            image, height_multiply_factor, person_height_pixels = PoseUtils.height_multiply_factor_side(image, self.debug, self.height,nose, left_shoulder,right_shoulder,left_hip,right_hip,left_knee,right_knee,left_ankle,right_ankle, person_height_pixels,'run', self.side_direction)
                             width_multiply_factor = height_multiply_factor/image.shape[0]*image.shape[1]
 
                             if self.side_direction == 'right':
