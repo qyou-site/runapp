@@ -3,7 +3,7 @@ from .models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from flask_login import login_user, login_required, logout_user, current_user
-
+from boto3 import session
 
 auth = Blueprint('auth', __name__)
 
@@ -61,6 +61,23 @@ def sign_up():
             db.session.commit()
             login_user(new_user, remember=True)
             flash('Account created!', category='success')
+
+            ACCESS_ID = 'QPHTN5KR6NLVV6JRNPMG'
+            SECRET_KEY = '6fXDDDfMtWPPNUBDJDYnwH8Xouh66mi0OLBZTbus8cA'
+
+            sess = session.Session()
+            client = sess.client('s3',
+                                    region_name='ams3',
+                                    endpoint_url='https://ams3.digitaloceanspaces.com',
+                                    aws_access_key_id=ACCESS_ID,
+                                    aws_secret_access_key=SECRET_KEY)
+
+            # Upload a file to your Space
+            client.upload_file('app/database.db',  # Path to local file
+                            'pose-app',  # Name of Space
+                            f'database.db')  # Name for remote file
+
+            
             return redirect(url_for('views.save_img'))
 
     return render_template("sign_up.html", user=current_user)
