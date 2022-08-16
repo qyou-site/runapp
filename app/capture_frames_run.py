@@ -38,7 +38,7 @@ class frameCaptureRun():
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         # print("Frames per second using video.get(cv2.CV_CAP_PROP_FPS): {0}".format(fps))
         # print('Total number of frames: {0}'.format(total_frames))
-        frames_second_to_cut = 2
+        frames_second_to_cut = 1
         # if total_frames / fps > 10:
         #     return -1
         person_height_pixels = 0
