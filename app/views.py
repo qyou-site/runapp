@@ -61,14 +61,34 @@ def upload_vid():
 def save_img():
     main_sheet = 'main'
     url_main = f'https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={main_sheet}'
+    
+    logs_sheet = 'labels_log'
+    url_logs = f'https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={logs_sheet}'
 
     try:
         df_meta = pd.read_csv(url_main)
     except pd.errors.EmptyDataError as e:
-        return 'Please upload a video at /upload'
-           
+        return 'Please upload a video at /upload' 
+
+    try:
+        df_logs = pd.read_csv(url_logs)
+    except pd.errors.EmptyDataError as e:
+        df_logs = pd.DataFrame()
+    
+    index_list = list(range(len(df_meta)))
+            
+    df_logs['criteria'] = df_logs.apply(lambda x: x['user_email']+'-'+x['image_name'].split('/')[-1],axis=1)
+    while True:
+        if len(index_list) != 0:
+            index = random.choice(index_list) ###check whether its squat or running
+            if current_user.email+'-'+df_meta.at[index,'filename'] in df_logs['criteria'].values:
+                index_list.remove(index)
+            else:
+                break
+        else:
+            return 'You have no more frames to label'
+
     if request.method == 'GET':
-        index = random.randint(0,len(df_meta)-1) ###check whether its squat or running
         img_choice = df_meta.loc[index,'filename']
         img_frame = df_meta.loc[index,'frame']
         # do_dir = 'https://pose-app.ams3.digitaloceanspaces.com/static'
@@ -81,7 +101,7 @@ def save_img():
         return render_template('index.html', metadata = metadata, img_name=img, user=current_user)
 
     if request.method == 'POST':
-        index = random.randint(0,len(df_meta)-1) ###check whether its squat or running
+        # index = random.randint(0,len(df_meta)-1) ###check whether its squat or running
         date = datetime.now().strftime("%Y/%m/%d-%H:%M:%S")
         img_choice = df_meta.loc[index,'filename']
         img_frame = df_meta.loc[index,'frame']
