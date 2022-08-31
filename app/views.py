@@ -81,6 +81,8 @@ def save_img():
     while True:
         if len(index_list) != 0:
             index = random.choice(index_list) ###check whether its squat or running
+            if len(df_logs) == 0:
+                break
             if current_user.email+'-'+df_meta.at[index,'filename'] in df_logs['criteria'].values:
                 index_list.remove(index)
             else:
